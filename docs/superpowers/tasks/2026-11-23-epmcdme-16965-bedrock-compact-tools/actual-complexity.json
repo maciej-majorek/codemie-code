@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "generated": "2026-11-23T00:00:00Z",
+  "dimensions": {
+    "component_scope":      { "score": 2, "label": "S" },
+    "requirements_clarity": { "score": 2, "label": "S" },
+    "technical_risk":       { "score": 3, "label": "M" },
+    "file_change_estimate": { "score": 3, "label": "M" },
+    "dependencies":         { "score": 1, "label": "XS" },
+    "affected_layers":      { "score": 1, "label": "XS" }
+  },
+  "total": 12,
+  "size": "S",
+  "band_range": "10-14",
+  "files_changed": 4,
+  "routing": "writing-plans",
+  "key_reasoning": [
+    { "dimension": "technical_risk", "reason": "New helper claude-tools-guard.ts mutates outgoing request bodies in the shared Claude request normalizer proxy path; temporary mitigation with no exact precedent, but small, pure, and trivially reversible." },
+    { "dimension": "file_change_estimate", "reason": "4 files (1 new helper, 1 modified normalizer, 2 new test files) in a single directory; file count maps to M per diffstat mapping (4-6)." }
+  ],
+  "red_flags_applied": [],
+  "split_recommendation": null
+}

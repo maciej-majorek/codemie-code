@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "task": "Make /compact and automatic compaction work for Bedrock-backed Claude models via the SSO provider, fixing litellm.UnsupportedParamsError about a missing 'tools=' param, with the rejecting layer (CLI proxy vs backend LiteLLM) not yet established.",
+  "generated": "2026-11-18T00:00:00Z",
+  "source": "adopted from Jira EPMCDME-16965 attachment sdlc-complexity-complexity-assessment.json (product-owner)",
+  "dimensions": {
+    "component_scope": { "score": 3, "label": "M" },
+    "requirements_clarity": { "score": 4, "label": "L" },
+    "technical_risk": { "score": 4, "label": "L" },
+    "file_change_estimate": { "score": 2, "label": "S" },
+    "dependencies": { "score": 1, "label": "XS" },
+    "affected_layers": { "score": 2, "label": "S" }
+  },
+  "total": 16,
+  "size": "M",
+  "routing": "brainstorming",
+  "key_reasoning": [
+    {
+      "dimension": "requirements_clarity",
+      "reason": "The failing layer is not established. Checked-in backend litellm_config.yaml already sets modify_params: true (EPMCDME-12762/13136 fix for this exact error). The proxy has no code that drops tools and no captured /compact request exists. Choice between CLI proxy normalizer, LiteLLM/backend config, or no code change is an open design decision."
+    },
+    {
+      "dimension": "technical_risk",
+      "reason": "Closest pattern is claude-request-normalizer / background-request-normalizer, which does not cover this. Proxy cannot tell Bedrock from Vertex for shared aliases; no recorded /compact request shape; injecting tools is new behaviour on a shared request path."
+    }
+  ],
+  "red_flags_applied": [],
+  "split_recommendation": null
+}

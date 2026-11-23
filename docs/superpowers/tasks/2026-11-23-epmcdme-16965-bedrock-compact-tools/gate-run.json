@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "branch": "EPMCDME-16965_bedrock-compact-tools",
+ "head": "80306d239a62c4df6d9fda9b9e97d99f6d4f29ae",
+ "runner": "npm",
+ "started_at": "2026-11-23T13:46:08.567908Z",
+ "completed_at": "2026-11-23T13:46:08.567945Z",
+ "status": "BLOCKED",
+ "drift_detected": false,
+ "gates": [
+  {
+   "id": "license",
+   "source": "guide",
+   "status": "PASS",
+   "command": "npm run license-check",
+   "exit_code": 0
+  },
+  {
+   "id": "lint",
+   "source": "guide",
+   "status": "PASS",
+   "command": "npm run lint",
+   "exit_code": 0
+  },
+  {
+   "id": "typecheck",
+   "source": "guide",
+   "status": "PASS",
+   "command": "npm run typecheck",
+   "exit_code": 0
+  },
+  {
+   "id": "build",
+   "source": "guide",
+   "status": "PASS",
+   "command": "npm run build",
+   "exit_code": 0
+  },
+  {
+   "id": "unit",
+   "source": "guide",
+   "status": "FAIL",
+   "command": "npx vitest run --project unit",
+   "exit_code": 1,
+   "notes": "11 failed / 12177 passed; failures look Windows-env related (symlinks, locks)"
+  },
+  {
+   "id": "integration",
+   "source": "guide",
+   "status": "FAIL",
+   "command": "npx vitest run --project cli",
+   "exit_code": 1,
+   "notes": "28 failed / 349 passed"
+  },
+  {
+   "id": "commitlint",
+   "source": "guide",
+   "status": "PASS",
+   "command": "npm run commitlint:last",
+   "exit_code": 0
+  },
+  {
+   "id": "secrets",
+   "source": "hook",
+   "status": "SKIPPED",
+   "command": "npm run validate:secrets",
+   "exit_code": 0,
+   "notes": "Output: 'No staged changes to scan'; stage changes (and run Docker) to scan locally; CI runs it."
+  }
+ ],
+ "failures": {
+  "unit": "       |     ^\n    126|     process.argv[1] = link;\n    127|\n\n\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af[9/11]\u00e2\u017d\u00af\n\n FAIL  |unit| src/providers/plugins/sso/proxy/plugins/__tests__/otlp.plugin.credentials-refresh.test.ts > OtlpInterceptor \u00e2\u20ac\u201d credential refresh > tick() retries stale credentials and forwards sessions with the refreshed ones\nAssertionError: expected \"vi.fn()\" to be called with arguments: [ 's1', { cookies: { \u00e2\u20ac\u00a6(1) }, \u00e2\u20ac\u00a6(1) } ]\n\nNumber of calls: 0\n\n \u00e2\ufffd\u00af src/providers/plugins/sso/proxy/plugins/__tests__/otlp.plugin.credentials-refresh.test.ts:149:36\n    147|     expect(resolveFreshCredentialsMock).toHaveBeenCalledWith(config);\n    148|     expect(clearCredentialsStaleMock).toHaveBeenCalledTimes(1);\n    149|     expect(processSessionTickMock).toHaveBeenCalledWith('s1', freshCre\u00e2\u20ac\u00a6\n       |                                    ^\n    150|   });\n    151| });\n\n\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af[10/11]\u00e2\u017d\u00af\n\n FAIL  |unit| src/providers/plugins/sso/proxy/plugins/__tests__/sso.session-sync.plugin.test.ts > SSOSessionSyncPlugin > background timer lifecycle > a line the server refused for good during a timer run > stamps the drop on the live record without spending an attempt\nAssertionError: expected { sessionId: 'session-123', \u00e2\u20ac\u00a6(9) } to match object { \u00e2\u20ac\u00a6(3) }\n(12 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n    \"deliveryRealAttempts\": 2,\n-   \"droppedAt\": Any<Number>,\n-   \"droppedReason\": \"rejected by the server\",\n  }\n\n \u00e2\ufffd\u00af src/providers/plugins/sso/proxy/plugins/__tests__/sso.session-sync.plugin.test.ts:507:23\n    505|\n    506|         const saved = JSON.parse(readFileSync(livePath(), 'utf-8')) as\u00e2\u20ac\u00a6\n    507|         expect(saved).toMatchObject({ droppedReason: 'rejected by the \u00e2\u20ac\u00a6\n       |                       ^\n    508|         expect(saved.deliveryFailingSince).toBeUndefined();\n    509|       });\n\n\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af[11/11]\u00e2\u017d\u00af\n\n\n Test Files  7 failed | 642 passed (649)\n      Tests  11 failed | 12177 passed | 75 skipped (12263)\n   Start at  14:28:53\n   Duration  528.09s (transform 129.81s, setup 9.94s, import 550.49s, tests 1910.73s, environment 252ms)\n",
+  "integration": "       |                             ^\n    234|     expect(result.stdout).toContain('[{\"skill\":\"foo\"}]');\n    235|     const [invocation] = readInvocations();\n\n\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af[30/36]\u00e2\u017d\u00af\n\n FAIL  |cli| tests/integration/cli-commands/skills.test.ts > codemie skills (authenticated upstream spawn) > propagates upstream non-zero exit codes (not collapsed to 1)\nAssertionError: expected 1 to be 7 // Object.is equality\n\n- Expected\n+ Received\n\n- 7\n+ 1\n\n \u00e2\ufffd\u00af tests/integration/cli-commands/skills.test.ts:243:29\n    241|       STUB_EXIT_CODE: '7',\n    242|     });\n    243|     expect(result.exitCode).toBe(7);\n       |                             ^\n    244|   });\n    245|\n\n\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af[31/36]\u00e2\u017d\u00af\n\n FAIL  |cli| tests/integration/cli-commands/skills.test.ts > codemie skills (authenticated upstream spawn) > classifies CODEMIE_SKILL_EGRESS_BLOCKED stderr as egress_blocked exit code\nAssertionError: expected 1 to be 7 // Object.is equality\n\n- Expected\n+ Received\n\n- 7\n+ 1\n\n \u00e2\ufffd\u00af tests/integration/cli-commands/skills.test.ts:254:29\n    252|       STUB_STDERR: 'CODEMIE_SKILL_EGRESS_BLOCKED audit attempt',\n    253|     });\n    254|     expect(result.exitCode).toBe(7);\n       |                             ^\n    255|     expect(result.stderr).toContain('CODEMIE_SKILL_EGRESS_BLOCKED');\n    256|   });\n\n\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af\u00e2\u017d\u00af[32/36]\u00e2\u017d\u00af\n\n\n Test Files  12 failed | 35 passed | 2 skipped (49)\n      Tests  28 failed | 349 passed | 24 skipped (401)\n   Start at  14:37:46\n   Duration  383.72s (transform 102.70s, setup 2.94s, import 143.84s, tests 1979.93s, environment 20ms)\n"
+ }
+}

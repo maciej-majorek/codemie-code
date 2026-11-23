@@ -1,0 +1,248 @@
+{
+  "schema": "sdlc-factory/code-review-final@1",
+  "passed": true,
+  "decision": "approve",
+  "gate_decision": {
+    "gate": "code-review.check",
+    "decision": "approve",
+    "source": "hitl",
+    "rationale": "Check round approved; CR-001 resolved; fix set empty"
+  },
+  "gates": [
+    {
+      "gate": "code-review.final",
+      "decision": "request-changes",
+      "source": "hitl",
+      "rationale": "Fix set: CR-001; CR-002 accepted, CR-003 wont-fix, CR-004 fix-later"
+    },
+    {
+      "gate": "code-review.check",
+      "decision": "approve",
+      "source": "hitl",
+      "rationale": "Check round approved; CR-001 resolved; fix set empty"
+    }
+  ],
+  "reviewed_head": "80306d239a62c4df6d9fda9b9e97d99f6d4f29ae",
+  "rounds": [
+    "final",
+    "check"
+  ],
+  "rationale": "CR-001 resolved: the tools guard now runs when the model is empty (source at HEAD confirmed, regression test added). Only CR-001 was in the fix set; CR-002 and CR-003 were outside it (waived), CR-004 is advisory and not in the fix set.",
+  "confidence": "low",
+  "check_confidence": "high",
+  "risk_flags": [],
+  "open": 0,
+  "closed": {
+    "fixed": 1,
+    "moot": 0,
+    "decided": 0,
+    "wont_fix": 2
+  },
+  "findings": [
+    {
+      "id": "CR-001",
+      "kind": "code",
+      "severity": "major",
+      "triage": "patch",
+      "file": "src/providers/plugins/sso/proxy/plugins/claude-request-normalizer.plugin.ts",
+      "line": 249,
+      "title": "Tools guard skipped when model is empty",
+      "problem": "The guard runs after `if (!model) return;`. A /v1/messages JSON body with no `model` and no configured model is never guarded, though the spec scopes the guard to all /v1/messages JSON bodies.",
+      "impact": "Narrow trigger: such a body is unusual (Claude Code always sends model, and config.model is normally set), but the spec requirement is only partially met and the placeholder is silently not applied.",
+      "recommendation": "Run the isMessagesPath tool-guard step before the empty-model early return, or restructure so the model-dependent normalizations return early without skipping the guard.",
+      "status": "resolved",
+      "check_notes": "Early return removed; model-dependent normalizations wrapped in if (model); tools guard runs unconditionally for messages paths. Test added.",
+      "fix": {
+        "change": "Normalizer runs the tools guard even when no model is resolved; model-dependent normalizations are wrapped in if (model) instead of early return",
+        "test": "claude-request-normalizer.tools-guard.test.ts: still guards a /v1/messages body when no model is requested or configured"
+      },
+      "disposition": {
+        "rationale": "recommended action accepted",
+        "source": "hitl",
+        "action": "fix-now"
+      }
+    },
+    {
+      "id": "CR-002",
+      "kind": "decision",
+      "severity": "critical",
+      "triage": "decision_needed",
+      "file": "src/providers/plugins/sso/proxy/plugins/claude-request-normalizer.plugin.ts",
+      "line": 268,
+      "title": "No captured /compact body or 13808 outcome",
+      "problem": "AC1 and the spec exit condition require a real /compact body capture (via the shape-summary log) and the EPMCDME-13808 outcome before the guard ships; neither is attached. The spec says AC2 to AC7 are not closed without it. AC5 (401 retry seeing the rewritten body) is also not covered by a test.",
+      "impact": "Without capture evidence it is unconfirmed that tools are actually missing and that the gateway fix does not already cover it; a human must decide whether to ship the mitigation anyway or attach evidence first.",
+      "recommendation": "Attach the captured shape-summary and 13808 outcome to the task record, or record an explicit decision to ship without it (and optionally add a test that the 401 retry sends the rewritten body).",
+      "status": "wont-fix",
+      "disposition": {
+        "rationale": "shipped as temporary mitigation; real /compact capture and 13808 outcome tracked in handoff",
+        "source": "hitl",
+        "action": "accept"
+      }
+    },
+    {
+      "id": "CR-003",
+      "kind": "code",
+      "severity": "major",
+      "triage": "patch",
+      "file": "unknown",
+      "title": "Commit subjects embed ticket key",
+      "problem": "Commit subjects 'feat(proxy): EPMCDME-16965 add placeholder tools guard helper' and 'fix(proxy): EPMCDME-16965 add placeholder tools to Claude requests with tool history' carry the ticket key, which git-workflow.md Anti-Patterns says to put in the body footer instead.",
+      "impact": "Documented commit-format convention is not met in the review range; blocks the workflow standard.",
+      "recommendation": "Reword subjects without the ticket key and reference the ticket in the body footer (or let the squash PR title carry the format).",
+      "status": "wont-fix",
+      "disposition": {
+        "rationale": "repo convention puts the ticket key in the commit subject (e.g. recent EPMCDME-16608 and EPMCDME-15557 commits); rewriting local history not warranted",
+        "source": "hitl",
+        "action": "wont-fix"
+      }
+    },
+    {
+      "id": "CR-004",
+      "kind": "code",
+      "severity": "minor",
+      "triage": "advisory",
+      "file": "src/providers/plugins/sso/proxy/plugins/claude-tools-guard.ts",
+      "line": 62,
+      "title": "Non-array tools value overwritten by placeholder",
+      "problem": "summarizeToolShape treats a non-array `tools` (object or string) as zero tools, so with tool history the malformed value is replaced by the placeholder instead of passing through.",
+      "impact": "Trigger needs a malformed client request; upstream would reject it anyway, so the only effect is masking a client error.",
+      "recommendation": "Return false from ensureToolsForToolHistory when body.tools is defined and not an array.",
+      "status": "wont-fix",
+      "disposition": {
+        "rationale": "recommended action accepted",
+        "source": "hitl",
+        "action": "fix-later"
+      }
+    }
+  ],
+  "deferred": [],
+  "coverage_graded_at": "final",
+  "business_review": [
+    {
+      "kind": "story-ac",
+      "item": "AC1: shape-summary debug log exists; one real /compact body captured and attached with 13808 outcome",
+      "status": "partial",
+      "notes": "Debug log added; no captured body or 13808 outcome in diff"
+    },
+    {
+      "kind": "story-ac",
+      "item": "AC2: /compact-shaped request leaves proxy with non-empty tools",
+      "status": "pass",
+      "notes": "ensureToolsForToolHistory wired in normalizer; tests present"
+    },
+    {
+      "kind": "story-ac",
+      "item": "AC3: no history/tool_choice or non-empty tools forwarded byte-identical",
+      "status": "pass",
+      "notes": "Rewrite gated on modified flags"
+    },
+    {
+      "kind": "story-ac",
+      "item": "AC4: automatic compaction covered by same rule, no prompt-text detection",
+      "status": "pass",
+      "notes": "Shape-only rule"
+    },
+    {
+      "kind": "story-ac",
+      "item": "AC5: placeholder does not change alias/other fields; later plugins and 401 retry see rewritten body",
+      "status": "partial",
+      "notes": "context.requestBody rewritten; 401 retry re-send not confirmed by test (retry receives caller-supplied body)"
+    },
+    {
+      "kind": "story-ac",
+      "item": "AC6: non-Claude clients and non-/v1/messages paths untouched",
+      "status": "pass",
+      "notes": "Allow-list unchanged; isMessagesPath gate"
+    },
+    {
+      "kind": "story-ac",
+      "item": "AC7: Vitest test via plugin.createInterceptor covering injection, passthroughs, tool_choice cases",
+      "status": "pass",
+      "notes": "Two new test files"
+    },
+    {
+      "kind": "story-ac",
+      "item": "AC8: live /compact on Bedrock Claude succeeds and next message succeeds after release",
+      "status": "pending-stage-7",
+      "notes": "Needs live execution evidence"
+    },
+    {
+      "kind": "story-ac",
+      "item": "AC9: task directory keeps Assumptions and Risks as root-cause record",
+      "status": "pass",
+      "notes": "spec.md retains them"
+    },
+    {
+      "kind": "spec",
+      "item": "Guard at priority 14 with same clients allow-list as Claude normalizer",
+      "status": "pass",
+      "notes": "Implemented in normalizer plugin"
+    },
+    {
+      "kind": "spec",
+      "item": "Inject single named-constant placeholder when tools missing/empty and tool history or tool_choice auto/none",
+      "status": "pass",
+      "notes": "UNAVAILABLE_TOOL_PLACEHOLDER"
+    },
+    {
+      "kind": "spec",
+      "item": "tool_choice any/tool without tools: do not inject, pass through, logger.debug",
+      "status": "pass",
+      "notes": "claude-tools-guard.ts:64-67"
+    },
+    {
+      "kind": "spec",
+      "item": "Every other request byte-identical: no re-serialization, no content-length reset",
+      "status": "pass",
+      "notes": "Gated on modified flags"
+    },
+    {
+      "kind": "spec",
+      "item": "logger.debug on injection with no body content",
+      "status": "pass",
+      "notes": "Shape summary only"
+    },
+    {
+      "kind": "spec",
+      "item": "Guard applies only to /v1/messages JSON bodies",
+      "status": "partial",
+      "notes": "Guard sits after the empty-model early return, so a model-less body is skipped"
+    },
+    {
+      "kind": "spec",
+      "item": "Exit condition: ship guard only if capture shows tools missing and gateway fix does not cover it",
+      "status": "partial",
+      "notes": "Guard shipped without capture evidence or 13808 outcome"
+    },
+    {
+      "kind": "spec",
+      "item": "Cheap pre-check before JSON.parse on large bodies (R4 planning item)",
+      "status": "na",
+      "notes": "Planning item, not a requirement"
+    }
+  ],
+  "standards_review": [
+    {
+      "kind": "commit-format",
+      "status": "partial",
+      "notes": "2 subjects use allowed types/scope but embed ticket key EPMCDME-16965 in the subject, which git-workflow.md Anti-Patterns lists as something to avoid"
+    },
+    {
+      "kind": "code-quality",
+      "status": "pass",
+      "notes": "Kebab-case file, explicit return types, interface shapes, .js import extensions, logger.debug; deep relative logger import matches sibling plugin convention"
+    },
+    {
+      "kind": "security",
+      "status": "pass",
+      "notes": "Static placeholder only; logs body-free shape summary; no secrets touched"
+    }
+  ],
+  "final_round": {
+    "decision": "request-changes",
+    "rationale": "Two lenses (edge-case, acceptance) plus standards ran; blind and verification-gap n/a under balanced profile. One decision_needed (no captured /compact body or 13808 outcome per spec exit condition), 2 blocking patches, 1 advisory, 0 deferred, 3 dismissed; confidence low due to the open decision.",
+    "confidence": "low",
+    "risk_flags": []
+  }
+}

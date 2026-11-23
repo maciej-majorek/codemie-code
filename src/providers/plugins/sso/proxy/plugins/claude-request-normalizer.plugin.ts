@@ -11,6 +11,7 @@ import { CLAUDE_DESKTOP, VSCODE_CLAUDE_CODE } from '../proxy-clients.js';
 import { fetchCodeMieLlmModels } from '../../sso.http-client.js';
 import { isClaudeServableDeployment, resolveClaudeDeployment } from './claude-model-resolver.js';
 import { CredentialRefresher } from './credential-refresh.js';
+import { ensureToolsForToolHistory, summarizeToolShape } from './claude-tools-guard.js';
 
 // standard = leave thinking untouched; none = strip it; adaptive = requires the
 // adaptive thinking API + output_config.effort.
@@ -188,7 +189,11 @@ function handleDeprecatedSamplingParams(body: any, caps: ModelCapabilities, mode
   return true;
 }
 
-const ALLOWED_AGENTS: readonly string[] = ['codemie-claude', 'codemie-copilot', CLAUDE_DESKTOP, VSCODE_CLAUDE_CODE];
+function isMessagesPath(url: string | undefined): boolean {
+  return (url ?? '').split('?')[0] === '/v1/messages';
+}
+
+const ALLOWED_AGENTS:readonly string[] = ['codemie-claude', 'codemie-copilot', CLAUDE_DESKTOP, VSCODE_CLAUDE_CODE];
 
 export class ClaudeRequestNormalizerPlugin implements ProxyPlugin {
   id = '@codemie/proxy-claude-request-normalizer';
@@ -257,6 +262,13 @@ class ClaudeRequestNormalizerInterceptor implements ProxyInterceptor {
         modifiedByThinking = handleThinkingField(body, caps, model);
       }
 
+      // EPMCDME-16965 temporary mitigation: placeholder tools for tool history without tools.
+      let modifiedByTools = false;
+      if (isMessagesPath(context.url)) {
+        logger.debug('[claude-request-normalizer] Tool shape', summarizeToolShape(body));
+        modifiedByTools = ensureToolsForToolHistory(body);
+      }
+
       // Capabilities above are read from the client's requested (canonical) name
       // on purpose — MODEL_CAPABILITY_TABLE's patterns assume family-first order,
       // so this must run before any tenant-id rewrite below.
@@ -269,7 +281,7 @@ class ClaudeRequestNormalizerInterceptor implements ProxyInterceptor {
         }
       }
 
-      if (modifiedBySampling || modifiedByEffort || modifiedByThinking || modifiedByModel) {
+      if (modifiedBySampling || modifiedByEffort || modifiedByThinking || modifiedByTools || modifiedByModel) {
         const newBodyStr = JSON.stringify(body);
         context.requestBody = Buffer.from(newBodyStr, 'utf-8');
         context.headers['content-length'] = String(context.requestBody.length);

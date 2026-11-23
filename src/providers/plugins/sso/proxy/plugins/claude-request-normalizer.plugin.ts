@@ -246,20 +246,21 @@ class ClaudeRequestNormalizerInterceptor implements ProxyInterceptor {
 
       const requestedModel = typeof body.model === 'string' ? body.model : '';
       const model = requestedModel || this.context.config.model || '';
-      if (!model) {
-        return;
-      }
 
-      const caps = capabilitiesFor(model);
-
-      const modifiedBySampling = handleDeprecatedSamplingParams(body, caps, model);
-
-      // Not behind the thinking guard: Claude Code can send effort without thinking.
-      const modifiedByEffort = handleUnsupportedEffort(body, caps, model);
-
+      // Model-dependent normalizations are skipped without a model; the tools guard is not.
+      let modifiedBySampling = false;
+      let modifiedByEffort = false;
       let modifiedByThinking = false;
-      if (body.thinking) {
-        modifiedByThinking = handleThinkingField(body, caps, model);
+      if (model) {
+        const caps = capabilitiesFor(model);
+        modifiedBySampling = handleDeprecatedSamplingParams(body, caps, model);
+
+        // Not behind the thinking guard: Claude Code can send effort without thinking.
+        modifiedByEffort = handleUnsupportedEffort(body, caps, model);
+
+        if (body.thinking) {
+          modifiedByThinking = handleThinkingField(body, caps, model);
+        }
       }
 
       // EPMCDME-16965 temporary mitigation: placeholder tools for tool history without tools.

@@ -81,6 +81,14 @@ describe('ClaudeRequestNormalizer — placeholder tools guard', () => {
     expect(JSON.parse(ctx.requestBody!.toString('utf-8')).tools).toEqual([UNAVAILABLE_TOOL_PLACEHOLDER]);
   });
 
+  it('still guards a /v1/messages body when no model is requested or configured', async () => {
+    const plugin = new ClaudeRequestNormalizerPlugin();
+    const interceptor = await plugin.createInterceptor(pluginContext('codemie-claude'));
+    const ctx = proxyContext({ messages: history });
+    await interceptor.onRequest(ctx);
+    expect(JSON.parse(ctx.requestBody!.toString('utf-8')).tools).toEqual([UNAVAILABLE_TOOL_PLACEHOLDER]);
+  });
+
   it('is not registered for codemie-code or codex clients', () => {
     const plugin = new ClaudeRequestNormalizerPlugin();
     expect(plugin.clients).not.toContain('codemie-code');
